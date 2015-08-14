@@ -8,26 +8,37 @@ Created on Fri Aug 14 10:23:45 2015
 import matplotlib.pyplot as plt
 import random
 
+#Job class primarily used within the Requestor class
 class Job:
     def __init__(self, numOfWorkers, cost, skill):
         self.workers_needed = numOfWorkers
         self.cost = cost
         self.skill = skill
         
+    #Returns the skill needed in order to finish the task
     def get_skill(self):
         return self.skill
     
-
+#Worker class to represent a worker in the system
 class Worker:
     def __init__(self):
+        #Skill of the worker
         self.ability = random.randint(1,100)
+        #Worker's reputation
         self.reputation = 0.0
+        #List of requestors the worker has rated 1
         self.like_list = []
+        #list of workers the worker has rated -1
         self.block_list = []
+        #List of all ratings the worker has received
         self.ratings = []
+        #Number of tasks finsihed
         self.tasks_finished = 0
+        #Threshold for worker to rate the requestor a 0
         self.mid_threshold = random.randint(21,50)
+        #Threshold for worker to rate the requestor a -1
         self.low_threshold = random.randint(10,20)
+        #Quality of the worker's work
         self.quality = random.randint(1,100)
         
     def get_reputation(self):
@@ -39,14 +50,23 @@ class Worker:
     def get_ability(self):
         return self.ability
         
+    #rate a requestor
+    #Rating is dependent on the mid and lower thresholds
+    #If a requestor's behvaior level is greater than the mid threshold then they are given a 1
+    #If a requestos's behavior level is inbetween the mid and low threshold then they are given a 0
+    #If a requestor's behavior level is below the low threshold then they are given a 0
     def rate_Requestor(self, requestor):
         rep_requstor = requestor.getBehavior()
         if rep_requstor > self.mid_threshold:
             requestor.rate(1.0)
+            if requestor not in self.like_list:
+                self.like_list.append(requestor)
         elif rep_requstor > self.low_threshold:
             requestor.rate(0.0)
         else:
             requestor.rate(-1.0)
+            if requestor not in self.block_list:
+                self.block_list.append(requestor)
 
     def getAvgRating(self):
         return sum(self.ratings)/len(self.ratings) 
@@ -80,10 +100,15 @@ class Requestor:
         rep_worker = worker.get_quality()
         if rep_worker > self.mid_threshold:
             worker.rate(1.0)
+            if worker not in self.like_list:
+                self.like_list.append(worker)
         elif rep_worker > self.low_threshold:
             worker.rate(0.0)
         else:
             worker.rate(-1.0) 
+            if worker not in self.block_list:
+                self.block_list.append(worker)
+                
     def getBehavior(self):
         return self.behavior
         
