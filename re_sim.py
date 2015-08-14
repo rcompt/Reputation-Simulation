@@ -67,19 +67,21 @@ class Worker:
             requestor.rate(-1.0)
             if requestor not in self.block_list:
                 self.block_list.append(requestor)
-
+    #Helper function for "rate" function
     def getAvgRating(self):
         return sum(self.ratings)/len(self.ratings) 
-   
+   #rates the worker and updates their reputation
     def rate(self, value):
         self.ratings.append(value)
         self.reputation = self.getAvgRating()     
-        
+    #Function that does the task
     def complete_task(self):
         self.tasks_finished += 1
-        
+    
+#Class representing the requestors in a system
 class Requestor:    
     
+    #Same traits as a worker except for they also have a Job object representing their need for a Job to be completed
     def __init__(self):
         self.behavior = random.randint(1,100)
         self.ratings = []
@@ -92,10 +94,12 @@ class Requestor:
      
     def get_reputation(self):
         return self.reputation
-        
+    
+    #Creates a new job
     def new_job(self):
         self.job = Job(random.randint(1,100),random.randint(50,1000), random.randint(1,100))
-        
+    
+    #Rate a worker, works the same as the worker rating a requestor
     def rate_Worker(self, worker):
         rep_worker = worker.get_quality()
         if rep_worker > self.mid_threshold:
@@ -118,7 +122,8 @@ class Requestor:
     def rate(self, value):
         self.ratings.append(value)
         self.reputation = self.getAvgRating()
-        
+    
+    #function acts as posting a job
     def start_job(self, workers):
         #Gather priority_list of workers sorted in peference and reputation
         priority_list = [(worker,worker.reputation) for worker in workers]
@@ -133,16 +138,17 @@ class Requestor:
             priority_list[priority_list.index(elem)] = (preference,rep,worker)
         priority_list = sorted(priority_list)
         priority_list.reverse()
-        
+        #Gather workers that have the ability to complete the task
         worker_list = [worker for pref,rep,worker in priority_list if worker.get_ability() >= self.job.get_skill()]
-        
+        #Have workers complete the task
         for worker in worker_list:
             worker.complete_task()
             self.rate_Worker(worker)
             worker.rate_Requestor(self)
         
         self.new_job()
-        
+
+#Return average reputation of the list of objects
 def getAverageRep(array):
     reputations = []
     for elem in array:
