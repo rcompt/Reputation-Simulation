@@ -15,14 +15,26 @@ class Job:
         self.workers_needed = numOfWorkers
         self.cost = cost
         self.skill = skill
-        
+    
+    def isFinished(self):
+        return self.workers_needed == 0
     #Returns the skill needed in order to finish the task
     def get_skill(self):
         return self.skill
-    
+    #Reduce the number of workers needed to finish the task by the value of numOfWorkers
+    #Simulates the number of workers getting the needed task completed
+    def work(self, numOfWorkers):
+        if self.workers_needed > 0:
+            self.workers_needed -= numOfWorkers
+            return True
+        else:
+            return False
+        
 #Worker class to represent a worker in the system
 class Worker:
-    def __init__(self):
+    def __init__(self, entry):
+        #Time of entry
+        self.entry_date = entry
         #Skill of the worker
         self.ability = random.randint(1,100)
         #Worker's reputation
@@ -68,6 +80,24 @@ class Worker:
             requestor.rate(-1.0)
             if requestor not in self.block_list:
                 self.block_list.append(requestor)
+
+    #
+    def accept(self, requestor):
+        if requestor not in self.block_list:
+            #Personal_acceptance is examining is the requestor's reputation is above
+            #the worker's minimum threshold
+            #if so then they will accept work
+            personal_acceptance = ((requestor.get_reputation()+1)/2)*100
+            #If the requestor is already in the list of requestors that the worker likes
+            #then they accept work from them
+            if requestor in self.like_list:
+                return True
+            #Check if the reputation is high enough to work for
+            elif personal_acceptance > self.low_threshold:
+                return True
+        #Otherwise return that the worker would not work for the requestor
+        return False
+    
     #Helper function for "rate" function
     def getAvgRating(self):
         return sum(self.ratings)/len(self.ratings) 
@@ -76,8 +106,9 @@ class Worker:
         self.ratings.append(value)
         self.reputation = self.getAvgRating()     
     #Function that does the task
-    def complete_task(self):
-        self.tasks_finished += 1
+    def complete_task(self, job):
+        if(job.work(1)):
+            self.tasks_finished += 1
     
 #Class representing the requestors in a system
 class Requestor:    
@@ -140,14 +171,15 @@ class Requestor:
         priority_list = sorted(priority_list)
         priority_list.reverse()
         #Gather workers that have the ability to complete the task
-        worker_list = [worker for pref,rep,worker in priority_list if worker.get_ability() >= self.job.get_skill()]
+        worker_list = [worker for pref,reput,worker_ in priority_list if worker_.get_ability() >= self.job.get_skill()]
         #Have workers complete the task
         for worker in worker_list:
-            worker.complete_task()
+            if(worker.accept(self)):
+                worker.complete_task(self.job)
             self.rate_Worker(worker)
             worker.rate_Requestor(self)
-        
-        self.new_job()
+        if (self.job.isFinished()):
+            self.new_job()
 
 #Return average reputation of the list of objects
 def getAverageRep(array):
@@ -158,13 +190,16 @@ def getAverageRep(array):
 
 if __name__ == "__main__":
     workers = []
+    #Keeping track of workers added into the system over time
+    new_workers = []
+    #Add initial workers
     for x in xrange(100):
-        workers.append(Worker())
+        workers.append(Worker(0))
     requestors = []
     for x in xrange(100):
         requestors.append(Requestor())
     print("Requestors made")
-    print("Running Jobs")
+    print("Running Jobs")    
     
     worker_rep = []
     requestor_rep = []
@@ -184,15 +219,18 @@ if __name__ == "__main__":
         print("Average requestor reputation: " + str(requestor_avg))
         for requestor in requestors:
             requestor.start_job(workers)
-        workers.append(Worker())
+        #Add new workers
+        for x in xrange(random.randint(1,20)):
+            workers.append(Worker(x+1))
         worker_rep.append(worker_avg)
         requestor_rep.append(requestor_avg)
         time.append(x+1)
-        work_line.set_xdata(time)
-        work_line.set_ydata(worker_rep)
-        req_line.set_ydata(requestor_rep)
-        req_line.set_xdata(time)
         
+    #Create lines for plot of average overall worker and requestor reputation over time
+    work_line.set_xdata(time)
+    work_line.set_ydata(worker_rep)
+    req_line.set_ydata(requestor_rep)
+    req_line.set_xdata(time)
     ax.relim()
     ax.autoscale_view()
     plt.draw()
