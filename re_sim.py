@@ -81,7 +81,8 @@ class Worker:
             if requestor not in self.block_list:
                 self.block_list.append(requestor)
 
-    #
+    #CURRENT ISSUE
+    #AT BEGINNING workers and requestors have a 0 reputation, thus making a 50 personal_acceptance
     def accept(self, requestor):
         if requestor not in self.block_list:
             #Personal_acceptance is examining is the requestor's reputation is above
@@ -219,12 +220,13 @@ if __name__ == "__main__":
         print("Average requestor reputation: " + str(requestor_avg))
         for requestor in requestors:
             requestor.start_job(workers)
-        #Add new workers
-        for x in xrange(random.randint(1,20)):
-            workers.append(Worker(x+1))
         worker_rep.append(worker_avg)
         requestor_rep.append(requestor_avg)
         time.append(x+1)
+        #Add new workers
+        for x in xrange(random.randint(1,20)):
+            workers.append(Worker(x+1))
+
         
     #Create lines for plot of average overall worker and requestor reputation over time
     work_line.set_xdata(time)
@@ -237,7 +239,7 @@ if __name__ == "__main__":
     plt.show()
     
     #Plot histogram of all worker reputations
-    all_reputations = [x.getReputation() for x in workers]
+    all_reputations = [x.get_reputation() for x in workers]
     sigma = P.std(all_reputations)
     mu = P.average(all_reputations)
     n, bins, patches = P.hist(all_reputations, 20, normed=1, histtype='step',cumulative=True)
