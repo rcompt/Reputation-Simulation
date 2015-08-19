@@ -7,6 +7,7 @@ Created on Fri Aug 14 10:23:45 2015
 
 import matplotlib.pyplot as plt
 import random
+import pylab as P
 
 #Job class primarily used within the Requestor class
 class Job:
@@ -183,6 +184,7 @@ if __name__ == "__main__":
         print("Average requestor reputation: " + str(requestor_avg))
         for requestor in requestors:
             requestor.start_job(workers)
+        workers.append(Worker())
         worker_rep.append(worker_avg)
         requestor_rep.append(requestor_avg)
         time.append(x+1)
@@ -191,7 +193,17 @@ if __name__ == "__main__":
         req_line.set_ydata(requestor_rep)
         req_line.set_xdata(time)
         
-        ax.relim()
-        ax.autoscale_view()
-        plt.draw()
-        plt.show()
+    ax.relim()
+    ax.autoscale_view()
+    plt.draw()
+    plt.show()
+    
+    #Plot histogram of all worker reputations
+    all_reputations = [x.getReputation() for x in workers]
+    sigma = P.std(all_reputations)
+    mu = P.average(all_reputations)
+    n, bins, patches = P.hist(all_reputations, 20, normed=1, histtype='step',cumulative=True)
+    y = P.normpdf(bins, mu, sigma)
+    P.plot(bins, y)
+    P.figure()
+    
