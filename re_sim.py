@@ -115,7 +115,8 @@ class Worker:
 class Requestor:    
     
     #Same traits as a worker except for they also have a Job object representing their need for a Job to be completed
-    def __init__(self):
+    def __init__(self, entry):
+        self.entry_date = entry
         self.behavior = random.randint(1,100)
         self.ratings = []
         self.reputation = 0.0
@@ -177,8 +178,8 @@ class Requestor:
         for worker in worker_list:
             if(worker.accept(self)):
                 worker.complete_task(self.job)
-            self.rate_Worker(worker)
-            worker.rate_Requestor(self)
+                self.rate_Worker(worker)
+                worker.rate_Requestor(self)
         if (self.job.isFinished()):
             self.new_job()
 
@@ -193,12 +194,13 @@ if __name__ == "__main__":
     workers = []
     #Keeping track of workers added into the system over time
     new_workers = []
+    #Keeping track of requestors added into the system over time
     #Add initial workers
     for x in xrange(100):
         workers.append(Worker(0))
     requestors = []
     for x in xrange(100):
-        requestors.append(Requestor())
+        requestors.append(Requestor(0))
     print("Requestors made")
     print("Running Jobs")    
     
@@ -223,9 +225,11 @@ if __name__ == "__main__":
         worker_rep.append(worker_avg)
         requestor_rep.append(requestor_avg)
         time.append(x+1)
-        #Add new workers
-        for x in xrange(random.randint(1,20)):
+#        Add new workers
+        for y in xrange(random.randint(1,20)):
             workers.append(Worker(x+1))
+        for y in xrange(random.randint(1,5)):
+            requestors.append(Requestor(x+1))
 
         
     #Create lines for plot of average overall worker and requestor reputation over time
@@ -239,11 +243,12 @@ if __name__ == "__main__":
     plt.show()
     
     #Plot histogram of all worker reputations
+    P.figure()
     all_reputations = [x.get_reputation() for x in workers]
     sigma = P.std(all_reputations)
     mu = P.average(all_reputations)
     n, bins, patches = P.hist(all_reputations, 20, normed=1, histtype='step',cumulative=True)
     y = P.normpdf(bins, mu, sigma)
     P.plot(bins, y)
-    P.figure()
+    
     
