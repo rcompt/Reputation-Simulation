@@ -218,10 +218,10 @@ if __name__ == "__main__":
     #Keeping track of requestors added into the system over time
     #Add initial workers
     for x in xrange(100):
-        workers.append(Worker(0,getAverageRep(workers)))
+        workers.append(Worker(0,0.0))
     requestors = []
     for x in xrange(100):
-        requestors.append(Requestor(0,getAverageRep(requestors)))
+        requestors.append(Requestor(0,0.0))
     print("Requestors made")
     print("Running Jobs")    
     
